@@ -162,11 +162,14 @@ ___SANDBOXED_JS_FOR_SERVER___
 
 const getAllEventData = require('getAllEventData');
 const sendHttpRequest = require('sendHttpRequest');
+const getRemoteAddress = require('getRemoteAddress');
+const getRequestHeader = require('getRequestHeader');
 const JSON = require('JSON');
 const parseUrl = require('parseUrl');
 
 const eventData = getAllEventData();
-const url = eventData.page_location;
+let url = eventData.page_location;
+if (data.setUrl === true && data.setUrlVar) url = data.setUrlVar;
 
 if (url) {
 
@@ -176,6 +179,7 @@ if (url) {
   const ref = data.deleteReferrer === true ? "" : eventData.page_referrer || "";
   const dom = data.domain || parsedUrl.hostname || null;
   const width = (eventData.screen_resolution || "1280x800").split('x')[0] || 1280;
+  if (data.redactUrlParams === true) url = url.split("?")[0];
 
   let plName = "pageview";
   if ((data.setEvent === true) && data.setEventVar) 
@@ -209,9 +213,9 @@ if (url) {
     }, 
     { 
       headers: {
-       'user-agent': eventData.user_agent,
+       'user-agent': eventData.user_agent || getRequestHeader("user-agent"),
        'content-type': 'application/json', 
-       'x-forwarded-for': eventData.ip_override 
+       'x-forwarded-for': eventData.ip_override || getRemoteAddress()  
       }, 
       method: 'POST', 
       timeout: 1000
@@ -256,6 +260,55 @@ ___SERVER_PERMISSIONS___
       "param": [
         {
           "key": "allowedUrls",
+          "value": {
+            "type": 1,
+            "string": "any"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "read_request",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "remoteAddressAllowed",
+          "value": {
+            "type": 8,
+            "boolean": true
+          }
+        },
+        {
+          "key": "headersAllowed",
+          "value": {
+            "type": 8,
+            "boolean": true
+          }
+        },
+        {
+          "key": "requestAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "headerAccess",
+          "value": {
+            "type": 1,
+            "string": "any"
+          }
+        },
+        {
+          "key": "queryParameterAccess",
           "value": {
             "type": 1,
             "string": "any"
