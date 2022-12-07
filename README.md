@@ -13,8 +13,8 @@ Plausible Analytics can process additional [custom event props](https://plausibl
 ### Advanced Settings
 This section contains additional options that allows enhanced data redaction. You can optionally send an empty referrer and delete any parameters from tracked urls. 
 
-#### Overriding Page Path
-If you want to collect data from several sources in different paths of the same profile, you can override the page path with a different value. This option also can be used for further data redaction or enrichment.
+#### Overriding Page URLs
+If you want to change URLs before they get sent, you can override the page path with a different value. This option also can be used for further data redaction or enrichment.
 
 #### Change Event Names
 Every event name can be translated for Plausibe using an optional override field. You can for example set the new event name with a lookup table. 
