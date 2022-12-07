@@ -17,7 +17,7 @@ This section contains additional options that allows enhanced data redaction. Yo
 If you want to collect data from several sources in different paths of the same profile, you can override the page path with a different value. This option also can be used for further data redaction or enrichment.
 
 ### Change Event Names
-Every event name can be translated for Umami using an optional override field. You can for example set the new event name with a lookup table. 
+Every event name can be translated for Plausibe using an optional override field. You can for example set the new event name with a lookup table. 
 
 ## Tip: How To Trigger
 Plausible processes pageviews and any other event as well. But as sending events only has an impact on reporting, you should make sure that only "reporting-relevant" events get sent to Plausible. That would be every `page_view` and all events that serve as a conversion in Plausible. You can use a lookup table variable to translate incoming event names to the desired conversion event name for Plausible and trigger the tag only if this variable contains a value.    
