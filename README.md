@@ -1,5 +1,11 @@
-# Plausible Analytics (plausible-analytics-tag-server)
-Plausible Analytics - Custom Tag Template for Server-Side Google Tag Manager
+# Plausible Analytics
+**Custom Tag Template for server-side Google Tag Manager**
+
+Send events from server-side GTM to Plausible Analytics 
+
+![Template Status](https://img.shields.io/badge/Community%20Template%20Gallery%20Status-submitted-orange)
+
+---
 
 ## Usage
 Install the tag template and add a new *Plausible Analytics* tag. If you use an on-premise setup, enter the URL of your tracking endpoint in the first field or keep the standard url. 
