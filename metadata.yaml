@@ -2,5 +2,5 @@ homepage: "https://www.markus-baersch.de"
 documentation: "https://github.com/mbaersch/plausible-analytics-tag-server#readme"
 versions:
   # Latest version
-  - sha: a2b9a341af91130219558ac55337acd26758e31a
+  - sha: 682f4075ef340c96726e1451208b742600bd4557
     changeNotes: Initial release.
