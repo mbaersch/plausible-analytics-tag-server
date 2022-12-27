@@ -54,6 +54,21 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Domain (Optional)",
         "simpleValueType": true,
         "help": "Optionally enter a fixed domain to override event data"
+      },
+      {
+        "type": "TEXT",
+        "name": "timeout",
+        "displayName": "Timeout (ms)",
+        "simpleValueType": true,
+        "defaultValue": 1000,
+        "valueValidators": [
+          {
+            "type": "NON_EMPTY"
+          },
+          {
+            "type": "POSITIVE_NUMBER"
+          }
+        ]
       }
     ]
   },
@@ -218,7 +233,7 @@ if (url) {
        'x-forwarded-for': eventData.ip_override || getRemoteAddress()  
       }, 
       method: 'POST', 
-      timeout: 1000
+      timeout: data.timeout||1000
     }, 
     JSON.stringify(plausibleEvent)
   );
