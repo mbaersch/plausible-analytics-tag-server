@@ -161,6 +161,34 @@ ___TEMPLATE_PARAMETERS___
         ]
       }
     ]
+  },
+  {
+    "displayName": "Logs Settings",
+    "name": "logsGroup",
+    "groupStyle": "ZIPPY_CLOSED",
+    "type": "GROUP",
+    "subParams": [
+      {
+        "type": "RADIO",
+        "name": "logType",
+        "radioItems": [
+          {
+            "value": "no",
+            "displayValue": "Do not log"
+          },
+          {
+            "value": "debug",
+            "displayValue": "Log to console during debug and preview"
+          },
+          {
+            "value": "always",
+            "displayValue": "Always log to console"
+          }
+        ],
+        "simpleValueType": true,
+        "defaultValue": "debug"
+      }
+    ]
   }
 ]
 
@@ -168,7 +196,7 @@ ___TEMPLATE_PARAMETERS___
 ___SANDBOXED_JS_FOR_SERVER___
 
 /**
- * @description Custom server-side Google Tag Manager Tag Template 
+ * @description Custom server-side Google Tag Manager Tag Template
  * Send events to Plausible Analytics
  * @version 1.0.1
  * @see {@link https://github.com/mbaersch|GitHub} for more info
@@ -181,6 +209,12 @@ const getRemoteAddress = require('getRemoteAddress');
 const getRequestHeader = require('getRequestHeader');
 const JSON = require('JSON');
 const parseUrl = require('parseUrl');
+const makeString = require('makeString');
+const getContainerVersion = require('getContainerVersion');
+const logToConsole = require('logToConsole');
+
+const isLoggingEnabled = determinateIsLoggingEnabled();
+const traceId = getRequestHeader('trace-id');
 
 const eventData = getAllEventData();
 let url = eventData.page_location;
@@ -197,21 +231,21 @@ if (url) {
   if (data.redactUrlParams === true) url = url.split("?")[0];
 
   let plName = "pageview";
-  if ((data.setEvent === true) && data.setEventVar) 
+  if ((data.setEvent === true) && data.setEventVar)
     plName = data.setEventVar;
   else if (name && (name !== "page_view"))
     plName = name;
-    
+
   let plausibleEvent = {
     name: plName,
-    url: url, 
+    url: url,
     domain: dom,
     screen_width: width
   };
-  
+
   if (ref !== "")
     plausibleEvent.referrer = ref;
-  
+
   //add props
   if (data.propsTable && data.propsTable.length > 0) {
     let props = {};
@@ -220,26 +254,76 @@ if (url) {
     });
     plausibleEvent.props = props;
   }
-  
+
+  if (isLoggingEnabled) {
+    logToConsole(
+        JSON.stringify({
+          Name: 'Plausible',
+          Type: 'Request',
+          TraceId: traceId,
+          EventName: makeString(plName === 'pageview' ? 'page_view' : plName),
+          RequestMethod: 'POST',
+          RequestUrl: serviceUrl,
+          RequestBody: plausibleEvent,
+        })
+    );
+  }
+
   sendHttpRequest(
-    serviceUrl, (statusCode) => {
-      if (statusCode >= 200 && statusCode < 300) data.gtmOnSuccess();
-      else data.gtmOnFailure(); 
-    }, 
-    { 
-      headers: {
-       'user-agent': eventData.user_agent || getRequestHeader("user-agent"),
-       'content-type': 'application/json', 
-       'x-forwarded-for': eventData.ip_override || getRemoteAddress()  
-      }, 
-      method: 'POST', 
-      timeout: data.timeout||1000
-    }, 
-    JSON.stringify(plausibleEvent)
+      serviceUrl, (statusCode, headers, body) => {
+        if (isLoggingEnabled) {
+          logToConsole(
+              JSON.stringify({
+                Name: 'Plausible',
+                Type: 'Response',
+                TraceId: traceId,
+                EventName: makeString(plName === 'pageview' ? 'page_view' : plName),
+                ResponseStatusCode: statusCode,
+                ResponseHeaders: headers,
+                ResponseBody: body,
+              })
+          );
+        }
+
+        if (statusCode >= 200 && statusCode < 300) data.gtmOnSuccess();
+        else data.gtmOnFailure();
+      },
+      {
+        headers: {
+          'user-agent': eventData.user_agent || getRequestHeader("user-agent"),
+          'content-type': 'application/json',
+          'x-forwarded-for': eventData.ip_override || getRemoteAddress()
+        },
+        method: 'POST',
+        timeout: data.timeout||1000
+      },
+      JSON.stringify(plausibleEvent)
   );
 
-} else 
+} else
   data.gtmOnFailure();
+
+function determinateIsLoggingEnabled() {
+  const containerVersion = getContainerVersion();
+  const isDebug = !!(
+      containerVersion &&
+      (containerVersion.debugMode || containerVersion.previewMode)
+  );
+
+  if (!data.logType) {
+    return isDebug;
+  }
+
+  if (data.logType === 'no') {
+    return false;
+  }
+
+  if (data.logType === 'debug') {
+    return isDebug;
+  }
+
+  return data.logType === 'always';
+}
 
 
 ___SERVER_PERMISSIONS___
@@ -295,6 +379,44 @@ ___SERVER_PERMISSIONS___
       },
       "param": [
         {
+          "key": "headerWhitelist",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "headerName"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "user-agent"
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "headerName"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "trace-id"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
           "key": "remoteAddressAllowed",
           "value": {
             "type": 8,
@@ -319,7 +441,7 @@ ___SERVER_PERMISSIONS___
           "key": "headerAccess",
           "value": {
             "type": 1,
-            "string": "any"
+            "string": "specific"
           }
         },
         {
@@ -335,6 +457,37 @@ ___SERVER_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "logging",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "environments",
+          "value": {
+            "type": 1,
+            "string": "all"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "read_container_data",
+        "versionId": "1"
+      },
+      "param": []
+    },
+    "isRequired": true
   }
 ]
 
@@ -347,3 +500,5 @@ scenarios: []
 ___NOTES___
 
 Created on 23.10.2020, 16:02:41
+
+
