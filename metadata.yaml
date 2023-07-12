@@ -2,5 +2,8 @@ homepage: "https://www.markus-baersch.de"
 documentation: "https://github.com/mbaersch/plausible-analytics-tag-server#readme"
 versions:
   # Latest version
+  - sha: 132e23ba6097f8e8a6b2ae23ca1c5bc276ae0ec2
+    changeNotes: Add Stape logs format.
+
   - sha: 682f4075ef340c96726e1451208b742600bd4557
     changeNotes: Initial release.
