@@ -422,6 +422,8 @@ if (url) {
     plausibleEvent.props = props;
 
   //add revenue
+  //currency and amount are passed through as provided; Plausible accepts amount as a
+  //number or a numeric string and keeping it as-is avoids float rounding of money values
   if (data.setRevenue === true && data.revenueCurrency && data.revenueAmount) {
     plausibleEvent.revenue = {
       currency: data.revenueCurrency,
@@ -928,6 +930,21 @@ scenarios:
     runCode(mockData);
     assertThat(capturedBody).contains('"quantity":"0"');
     assertThat(capturedBody).doesNotContain('skip');
+- name: Partial revenue (currency only) is not attached
+  code: |-
+    let capturedBody;
+    const mockData = { endpointUrl: 'https://plausible.io/api/event', logType: 'no',
+      setRevenue: true, revenueCurrency: 'EUR' };
+    mock('getContainerVersion', () => ({}));
+    mock('getRemoteAddress', () => '1.2.3.4');
+    mock('getAllEventData', () => ({
+      page_location: 'https://example.com/p', event_name: 'page_view',
+      screen_resolution: '1920x1080', user_agent: 'UA'
+    }));
+    mock('sendHttpRequest', (url, cb, options, body) => { capturedBody = body; cb(202, {}, ''); });
+    runCode(mockData);
+    assertThat(capturedBody).doesNotContain('revenue');
+    assertApi('gtmOnSuccess').wasCalled();
 
 
 ___NOTES___
