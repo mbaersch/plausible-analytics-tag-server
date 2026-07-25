@@ -26,7 +26,7 @@ For ecommerce goals Plausible can keep the revenue of an event. Turn on *Send Re
 These options help with data redaction and with correcting the values that get sent. You can send a custom referrer, send no referrer at all, and drop the parameters from the tracked URL.
 
 #### Overriding Page URLs
-Sometimes the URL needs to be changed before it is sent. *Override Page Location* swaps the whole URL for a value of your own, with scheme, host, path and query. *Override Page Path* only swaps the path and keeps the rest, which is useful to clean up or mask paths without touching the domain. If both are on, the location is applied first and the path override then replaces its path. Note that the domain reported to Plausible comes from the URL. If you send the location to a different host, set a fixed *Domain* as well so the events reach the right site.
+Sometimes the URL needs to be changed before it is sent. *Override Page Location* swaps the whole URL for a value of your own, with scheme, host, path and query. *Override Page Path* only swaps the path and keeps the rest, which is useful to clean up or mask paths without touching the domain. If both are on, the location is applied first and the path override then replaces its path. Keep in mind that the domain reported to Plausible comes from the URL. If you send the location to a different host, set a fixed *Domain* as well so the events reach the right site.
 
 #### Overriding The Referrer
 Instead of removing the referrer you can send your own value. Plausible only reads the referrer at the start of a visit to figure out the traffic source.
